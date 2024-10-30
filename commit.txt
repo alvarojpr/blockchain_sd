@@ -1,0 +1,5 @@
+cd caminho/para/o/repositorio/blockchain_sd
+git status
+git add e/bora.cpp
+git commit -m "Descreva suas alterações aqui"
+git push origin main
