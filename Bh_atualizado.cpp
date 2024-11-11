@@ -1,3 +1,50 @@
+/*
+
+
+===============================================================
+Cabeçalho de Implementação - Versão Simplificada de Blockchain
+===============================================================
+Objetivos:
+Desenvolver uma versão simplificada de um sistema de Blockchain em um ambiente simulado, onde múltiplos nós validam e adicionam blocos de transações de forma segura e imutável.
+
+Status de Implementação em relação aos requisitos até agora!!!:
+
+1. Criação e Estrutura de Blocos:
+   - [x] Cada bloco contém um número de identificação, lista de transações, hash do bloco anterior e hash próprio.
+   - [ ] Implementação de uma função de hashing robusta (ex.: SHA-256) ainda não foi realizada; atualmente, utiliza uma função XOR e Base64 para criptografia simplificada.
+
+2. Validação de Transações:
+   - [x] Validação de transações duplicadas antes de adicionar ao bloco (implementada na função `is_duplicate_transaction`).
+   - [ ] Validação completa e abrangente das transações ainda não foi implementada.
+
+3. Adição de Blocos e Encadeamento:
+   - [x] Encadeamento dos blocos com hash do bloco anterior, garantindo integridade básica da cadeia.
+   - [ ] Compartilhamento de blocos entre múltiplos nós e verificação da integridade pela rede não foi implementado.
+
+4. Implementação do Mecanismo de Consenso:
+   - [ ] Mecanismo de consenso (Prova de Trabalho - PoW) não implementado; não há verificação de desafio criptográfico para adicionar um bloco.
+
+5. Simulação de Falhas e Recuperação:
+   - [ ] Falha de nós e manejo de divergência de cadeias não implementados.
+
+6. Execução de Transações e Sincronização de Cadeias:
+   - [ ] Compartilhamento de transações e sincronização entre nós não implementados.
+   - [ ] Atualização de saldo de contas e envio de transações ainda não realizado.
+
+===============================================================
+
+
+*/
+
+
+
+
+
+
+
+
+
+
 #include <iostream>
 #include <list>
 #include <map>
@@ -41,8 +88,19 @@ struct block {
     int numero;
 };
 
-// criptografia GAMA=====================================
 
+/*
+===============================================================
+Função de geração de data atual para uso em hashes e registro de blocos
+===============================================================
+Objetivo: Obter a data atual em formato "YYYY-MM-DD" para ser usada no processo de hashing dos blocos.
+Função: `get_current_date`
+
+===============================================================
+*/
+
+
+// criptografia GAMA=====================================
 
 
 /*
@@ -75,7 +133,15 @@ std::string get_current_date() {
 }
 
 
+/*
+===============================================================
+Função de Criptografia Simplificada usando XOR
+===============================================================
+Objetivo: Encriptar e desencriptar dados com uma chave de criptografia.
+Função: `xorEncryptDecrypt`
 
+===============================================================
+*/
 
 
 std::string xorEncryptDecrypt(const std::string& data, const std::string& key) {
@@ -140,6 +206,16 @@ std::string base64_encode(const std::string& in) {
     return out;
 }
 
+
+/*
+===============================================================
+Função para Gerar um Hash de Bloco (Simples)
+===============================================================
+Objetivo: Criar um hash para o bloco combinando a data atual e o endereço de memória do bloco.
+Função: `encript_hash_bloco`
+Implementação: Funciona como uma implementação de hash básico, mas ainda não cumpre o requisito de segurança como SHA-256.
+===============================================================
+*/
 
 
 
@@ -217,7 +293,15 @@ string hash_mensagem(int cont) {
 }
 
 
-
+/*
+===============================================================
+Função de Validação de Transação Duplicada
+===============================================================
+Objetivo: Garantir que uma transação não seja duplicada antes de adicioná-la ao bloco.
+Função: `is_duplicate_transaction`
+ Esta função atende parcialmente ao requisito de validação de transações, evitando duplicidade.
+===============================================================
+*/
 
 
 // Função para validar se uma transação já existe no bloco atual
@@ -229,6 +313,18 @@ bool is_duplicate_transaction(const std::list<message_structure>& lista, const m
     }
     return false;
 }
+
+
+/*
+===============================================================
+Função de Envio de Mensagens entre Clientes
+===============================================================
+Objetivo: Simular o envio de mensagens (transações) entre clientes, com verificação de duplicatas.
+Função: `send_message`
+Cumpre parcialmente a validação de transações, pois verifica duplicatas antes de adicionar a mensagem ao bloco.
+===============================================================
+*/
+
 
 // Envia a mensagem entre clientes, agora com verificação de transações duplicadas
 void send_message(client* c1, client* c2, std::list<message_structure>& lista, block*& block_head) {
@@ -260,7 +356,15 @@ void send_message(client* c1, client* c2, std::list<message_structure>& lista, b
 }
 
 
-
+/*
+===============================================================
+Função de Criação de Bloco e Encadeamento com o Bloco Anterior
+===============================================================
+Objetivo: Criar um novo bloco e encadeá-lo ao bloco anterior, incluindo o hash para manter a integridade da cadeia.
+Função: `create_block`
+Esta função encadeia blocos usando o hash do bloco anterior, atendendo ao requisito básico de integridade da cadeia.
+===============================================================
+*/
 
 
 // Cria bloco quando atinge 6 mensagens
@@ -296,6 +400,15 @@ block* get_block_by_hash(const std::string& hash_encriptado) {
 }
 
 
+/*
+===============================================================
+Bloco Genesis (Inicial)
+===============================================================
+Objetivo: Criar o primeiro bloco da cadeia com hash inicial para iniciar o encadeamento.
+Função: `bloco_genesis_cabecao`
+Funciona como o bloco inicial (Gênesis) da cadeia, cumprindo parcialmente a estrutura básica da blockchain.
+===============================================================
+*/
 
 
 // Bloco Genesis
@@ -311,7 +424,15 @@ void bloco_genesis_cabecao() {
 
 
 
-
+/*
+===============================================================
+Função para Exibir Mensagens de um Bloco
+===============================================================
+Objetivo: Exibir as transações (mensagens) armazenadas em um bloco específico.
+Função: `exibir_mensagens_block`
+Exibe as mensagens de um bloco da cadeia, facilitando a verificação do conteúdo dos blocos.
+===============================================================
+*/
 
 // Exibe as mensagens de um bloco
 void exibir_mensagens_block(int n, block* block_head) {
