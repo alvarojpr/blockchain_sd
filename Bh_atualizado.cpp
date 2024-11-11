@@ -197,7 +197,7 @@ void exibir_mensagens_block(int n, block* block_head);
 
 
 // Cria um hash para cada mensagem
-string hash_mensagem() {
+string hash_mensagem(int cont) {
     static const char caracteres[] =
         "0123456789"
         "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -211,6 +211,8 @@ string hash_mensagem() {
     for (int i = 0; i < 6; ++i) {
         hash += caracteres[distrib(gen)];
     }
+    // Adiciona o contador para garantir unicidade
+    hash += "_" + to_string(cont);
     return hash;
 }
 
@@ -218,8 +220,18 @@ string hash_mensagem() {
 
 
 
-// Envia a mensagem entre clientes
-void send_message(client* c1, client* c2, list<message_structure>& lista, block*& block_head) {
+// Função para validar se uma transação já existe no bloco atual
+bool is_duplicate_transaction(const std::list<message_structure>& lista, const message_structure& nova_mensagem) {
+    for (const auto& mensagem : lista) {
+        if (mensagem.hash_mensagem == nova_mensagem.hash_mensagem) {
+            return true;  // Transação duplicada encontrada
+        }
+    }
+    return false;
+}
+
+// Envia a mensagem entre clientes, agora com verificação de transações duplicadas
+void send_message(client* c1, client* c2, std::list<message_structure>& lista, block*& block_head) {
     string texto = "mensagem numero " + to_string(cont);
     cont++;
 
@@ -227,9 +239,15 @@ void send_message(client* c1, client* c2, list<message_structure>& lista, block*
     mensagem.origin = *c1;
     mensagem.destiny = *c2;
     mensagem.texto = texto;
-    mensagem.hash_mensagem = hash_mensagem();
-    n_mensagens += 1;
+    mensagem.hash_mensagem = hash_mensagem(cont);
 
+    // Verifica se a mensagem é duplicada antes de adicioná-la
+    if (is_duplicate_transaction(lista, mensagem)) {
+        cout << "Transação duplicada detectada. Mensagem ignorada.\n";
+        return;
+    }
+
+    n_mensagens += 1;
     cout << c1->id << " enviou para " << c2->id << " a mensagem: " << mensagem.texto << endl;
 
     lista.push_back(mensagem);
@@ -273,8 +291,8 @@ void create_block(const std::list<message_structure>& lista, block*& block_head)
 
 block* get_block_by_hash(const std::string& hash_encriptado) {
     // A função blockchain não existe mais, agora buscamos o bloco diretamente usando o hash_encriptado
-    // Para isso pode implementar alguma lógica para procurar o bloco desejado, ou apenas retornar o próximo bloco
-    return nullptr; // Deverá implementar o acesso a blocos de acordo com sua estrutura de dados
+   
+    return nullptr; 
 }
 
 
@@ -311,7 +329,6 @@ void exibir_mensagens_block(int n, block* block_head) {
 
 
 
-
 // Cria o hash do bloco
 string hash_block(const list<message_structure>& lista) {
     stringstream ss;
@@ -320,7 +337,6 @@ string hash_block(const list<message_structure>& lista) {
     }
     return base64_encode(ss.str());
 }
-
 
 
 
