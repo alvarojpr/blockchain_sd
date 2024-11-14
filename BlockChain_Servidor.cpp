@@ -53,7 +53,12 @@ std::string get_current_date() {
 }
 
 
-
+/**
+ * Função que realiza a criptografia XOR/descrição de dados com uma chave fornecida.
+ * @param data Dados a serem criptografados/descriptografados
+ * @param key Chave de criptografia
+ * @return Dados criptografados/descriptografados
+ */
 std::string xorEncryptDecrypt(const std::string& data, const std::string& key) {
     std::string output = data;
     size_t keyLength = key.length();
@@ -113,7 +118,14 @@ std::string base64_encode(const std::string& in) {
     return out;
 }
 
-
+/**
+ * Encripta a combinação da data atual com o endereço de memória de um bloco.
+ * Essa função gera um "hash" único para o bloco, baseado na data e endereço de memória, e o criptografa com uma chave fixa.
+ * O hash resultante é então codificado em base64 para facilitar o transporte ou armazenamento.
+ *
+ * @param bloco Ponteiro para o bloco que será criptografado.
+ * @return Uma string codificada em base64 representando o hash criptografado.
+ */
 
 std::string encript_hash_bloco(const block* bloco) {
     std::string current_date = get_current_date();
@@ -131,7 +143,14 @@ std::string encript_hash_bloco(const block* bloco) {
 }
 
 
-
+/**
+ * Descriptografa um hash que foi criptografado anteriormente, validando sua autenticidade.
+ * A função verifica se a data do hash corresponde à data atual e extrai o endereço de memória associado.
+ * Caso o hash não seja válido, a função retorna uma mensagem de erro.
+ *
+ * @param hash_encriptado_base64 O hash criptografado em base64 a ser decriptado.
+ * @return O endereço de memória associado ao bloco, ou uma mensagem de erro se o hash for inválido.
+ */
 std::string decript_hash_bloco(const std::string& hash_encriptado_base64) {
     std::string hash_encriptado = base64_decode(hash_encriptado_base64);
 
@@ -158,7 +177,13 @@ string hash_block(const list<message_structure>& lista);
 void bloco_genesis_cabecao();
 void createSharedMemory();
 void closeSharedMemory();
-
+/**
+ * Gera um hash para uma mensagem com base em caracteres aleatórios e um contador.
+ * O hash gerado é uma combinação de caracteres aleatórios seguidos do número da transação.
+ *
+ * @param cont Contador que será anexado ao hash para garantir unicidade.
+ * @return O hash gerado para a mensagem.
+ */
 string hash_mensagem(int cont) {
     static const char caracteres[] =
         "0123456789"
@@ -178,7 +203,13 @@ string hash_mensagem(int cont) {
     return hash;
 }
 
-
+/**
+ * Verifica se uma transação (mensagem) é duplicada, comparando o hash da nova mensagem com os hashes já registrados.
+ *
+ * @param lista Lista de mensagens já registradas.
+ * @param nova_mensagem A nova mensagem a ser verificada.
+ * @return Retorna 'true' se a transação for duplicada, 'false' caso contrário.
+ */
 bool is_duplicate_transaction(const std::list<message_structure>& lista, const message_structure& nova_mensagem) {
     for (const auto& mensagem : lista) {
         if (mensagem.hash_mensagem == nova_mensagem.hash_mensagem) {
@@ -188,7 +219,17 @@ bool is_duplicate_transaction(const std::list<message_structure>& lista, const m
     return false;
 }
 
-
+/**
+ * Envia uma mensagem de um cliente para outro e a adiciona à lista de mensagens.
+ * Se a mensagem não for duplicada, ela é armazenada na lista de transações.
+ * Quando um número específico de mensagens (5) é atingido, um novo bloco é criado contendo essas mensagens.
+ * A função também impede que transações duplicadas sejam registradas.
+ *
+ * @param c1 Ponteiro para o cliente de origem (quem envia a mensagem).
+ * @param c2 Ponteiro para o cliente de destino (quem recebe a mensagem).
+ * @param lista Referência à lista de mensagens já registradas, que é atualizada com a nova mensagem.
+ * @param block_head Ponteiro para o cabeçalho da cadeia de blocos, que é atualizado quando um novo bloco é criado.
+ */
 
 void send_message(client* c1, client* c2, std::list<message_structure>& lista, block*& block_head) {
     string texto = "Mensagem numero " + to_string(cont);
@@ -218,7 +259,14 @@ void send_message(client* c1, client* c2, std::list<message_structure>& lista, b
 }
 
 void writeToSharedMemory(const string& msg, const string& hash_anterior, bool resolvido);
-
+/**
+ * Cria um novo bloco e o adiciona à cadeia de blocos.
+ * O bloco é gerado a partir de uma lista de mensagens e possui um hash gerado a partir delas.
+ * O bloco também recebe referências ao bloco anterior e próximo, garantindo a integridade da cadeia.
+ *
+ * @param lista Lista de mensagens que serão armazenadas no bloco.
+ * @param block_head Ponteiro para o cabeçalho da cadeia de blocos.
+ */
 void create_block(const std::list<message_structure>& lista, block*& block_head) {
     block* novo_bloco = new block;
     novo_bloco->messages = lista;
@@ -288,6 +336,10 @@ struct SharedMemoryBlock {
 HANDLE hMapFile = NULL;
 HANDLE hMutex;
 SharedMemoryBlock* pSharedMem = NULL;
+/**
+ * Função que cria e inicializa a memória compartilhada e o mutex.
+ * Mapeia a memória compartilhada e abre o mutex para controle de acesso concorrente.
+ */
 void createSharedMemory() {
 
     hMapFile = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, BUFFER_SIZE, SHARED_MEMORY_NAME);
@@ -309,7 +361,13 @@ void createSharedMemory() {
         CloseHandle(hMapFile);
     }
 }
-
+/**
+ * Função que escreve dados na memória compartilhada.
+ * @param msg Mensagem a ser armazenada
+ * @param hash_anterior Hash do bloco anterior
+ * @param hash_proximo Hash do próximo bloco
+ * @param resolvido Indica se a mensagem foi resolvida
+ */
 
 void writeToSharedMemory(const string& msg, const string& hash_anterior, bool resolvido) {
  
@@ -329,7 +387,9 @@ void writeToSharedMemory(const string& msg, const string& hash_anterior, bool re
 
     ReleaseMutex(hMutex);
 }
-
+/**
+ * Função que encerra o uso da memória compartilhada.
+ */
 void closeSharedMemory() {
    
     CloseHandle(hMutex);

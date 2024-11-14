@@ -21,7 +21,10 @@ struct SharedMemoryBlock {
 HANDLE hMapFile = NULL;
 HANDLE hMutex;
 SharedMemoryBlock* pSharedMem = NULL;
-
+/**
+ * Função que cria e inicializa a memória compartilhada e o mutex.
+ * Mapeia a memória compartilhada e abre o mutex para controle de acesso concorrente.
+ */
 void createSharedMemory() {
  
     hMapFile = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, BUFFER_SIZE, SHARED_MEMORY_NAME);
@@ -42,6 +45,11 @@ void createSharedMemory() {
         CloseHandle(hMapFile);
     }
 }
+/**
+ * Função que realiza a decodificação de uma string em base64.
+ * @param in String em base64 a ser decodificada
+ * @return String decodificada
+ */
 std::string xorEncryptDecrypt(const std::string& data, const std::string& key) {
     std::string output = data;
     size_t keyLength = key.length();
@@ -72,7 +80,10 @@ std::string base64_decode(const std::string& in) {
     return out;
 }
 
-
+/**
+ * Função principal que lê dados da memória compartilhada, tenta descriptografar as mensagens
+ * e atualiza a memória compartilhada se a mensagem for resolvida.
+ */
 void readFromSharedMemory() {
     WaitForSingleObject(hMutex, INFINITE);
 
@@ -106,7 +117,13 @@ void readFromSharedMemory() {
 
     ReleaseMutex(hMutex);
 }
-
+/**
+ * Função que escreve dados na memória compartilhada.
+ * @param msg Mensagem a ser armazenada
+ * @param hash_anterior Hash do bloco anterior
+ * @param hash_proximo Hash do próximo bloco
+ * @param resolvido Indica se a mensagem foi resolvida
+ */
 
 void writeToSharedMemory(const string& msg, const string& hash_anterior, const string& hash_proximo, bool resolvido) {
     WaitForSingleObject(hMutex, INFINITE);
@@ -124,7 +141,9 @@ void writeToSharedMemory(const string& msg, const string& hash_anterior, const s
 
     ReleaseMutex(hMutex);
 }
-
+/**
+ * Função que encerra o uso da memória compartilhada.
+ */
 void closeSharedMemory() {
   
     CloseHandle(hMutex);
